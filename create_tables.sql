@@ -34,3 +34,14 @@ CREATE TABLE accounts (
 	userRank ENUM ('Member', 'Director', 'Chairman') NOT NULL,
 	PRIMARY KEY (username)
 );
+
+--------------------------------------------------------------------------
+
+-- Create some sample events
+
+INSERT INTO events VALUES
+	('Event1', 'The park', '2026-03-04'),
+	('Event2', 'The lake', '2026-03-06'),
+	('Event3', 'The courtyard', '2026-03-07')
+);
+	
