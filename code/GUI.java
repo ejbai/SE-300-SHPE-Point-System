@@ -1,6 +1,11 @@
 import javax.swing.*;
 import java.awt.*;
 
+// TODO:
+//  make the login button functional and check against accounts table in database
+//  make different views for each of the four users based on login, and buttons that do things in each of them such as show a list of things or ask for inputs (already have public view button but it doesn't do anything)
+//  ...
+
 public class GUI {
     public static void main(String[] args) {
         SwingUtilities.invokeLater(() -> {
