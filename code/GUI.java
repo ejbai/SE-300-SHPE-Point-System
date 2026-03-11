@@ -1,7 +1,7 @@
 import javax.swing.*;
 import java.awt.*;
 
-public class SimpleSwingGUI {
+public class GUI {
     public static void main(String[] args) {
         SwingUtilities.invokeLater(() -> {
 
