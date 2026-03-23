@@ -1,5 +1,7 @@
 import javax.swing.*;
 import java.awt.*;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 
 // TODO:
 //  make the login button functional and check against accounts table in database
@@ -12,16 +14,16 @@ public class GUI {
 
             JFrame frame = new JFrame("SHPE Point Tracker");
             frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-            frame.setSize(800, 400);
+            frame.setSize(1200, 600);
 
             JPanel mainPanel = new JPanel(new BorderLayout());
 
-            //  LEFT PANEL 
+            //  LEFT PANEL
             JPanel leftPanel = new JPanel();
             leftPanel.setLayout(new BoxLayout(leftPanel, BoxLayout.Y_AXIS));
             leftPanel.setBorder(BorderFactory.createEmptyBorder(0, 50, 0, 0));
 
-            
+
             leftPanel.setOpaque(true);
             leftPanel.setBackground(Color.WHITE);
 
@@ -42,12 +44,12 @@ public class GUI {
             rightPanel.setLayout(new BoxLayout(rightPanel, BoxLayout.Y_AXIS));
             rightPanel.setBorder(BorderFactory.createEmptyBorder(0, 50, 0, 50));
 
-           
+
             rightPanel.setOpaque(true);
             rightPanel.setBackground(new Color(245, 245, 245));
 
             JLabel loginTitle = new JLabel("Member Login");
-            loginTitle.setFont(new Font("Arial", Font.BOLD, 18));
+            loginTitle.setFont(new Font("Arial", Font.BOLD, 30));
             loginTitle.setAlignmentX(Component.CENTER_ALIGNMENT);
 
             JLabel userLabel = new JLabel("Username:");
@@ -73,16 +75,32 @@ public class GUI {
             JLabel messageLabel = new JLabel(" ");
             messageLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
 
+            // login
+
             loginButton.addActionListener(e -> {
+
                 String username = usernameField.getText();
                 String password = new String(passwordField.getPassword());
 
-                if (username.equals("member") && password.equals("1234")) {
-                    messageLabel.setText("Login Successful");
+                String hashedPassword = hashPassword(password); // TODO: the hashing isn't working
+
+                String rank = DatabaseConnection.checkLogin(username, hashedPassword);
+
+                if(rank != null){
+
+                    RegisteredUser user = new RegisteredUser();
+
+                    messageLabel.setText("Login Successful (" + rank + ")");
+
                 } else {
+
                     messageLabel.setText("Invalid Credentials");
+
                 }
+
             });
+
+
 
             rightPanel.add(Box.createVerticalGlue());
             rightPanel.add(loginTitle);
@@ -104,7 +122,7 @@ public class GUI {
             rightPanel.add(messageLabel);
             rightPanel.add(Box.createVerticalGlue());
 
-            //  SPLIT PANE (DIVIDER) 
+            //  SPLIT PANE (DIVIDER)
             JSplitPane splitPane = new JSplitPane(
                     JSplitPane.HORIZONTAL_SPLIT,
                     leftPanel,
@@ -112,11 +130,11 @@ public class GUI {
             );
 
             splitPane.setDividerLocation(250);
-            splitPane.setDividerSize(8);                 
+            splitPane.setDividerSize(8);
             splitPane.setContinuousLayout(true);
-            splitPane.setBorder(BorderFactory.createEmptyBorder()); 
+            splitPane.setBorder(BorderFactory.createEmptyBorder());
 
-          
+
             splitPane.setEnabled(true);
             splitPane.setOneTouchExpandable(false);
 
@@ -126,5 +144,33 @@ public class GUI {
             frame.setLocationRelativeTo(null);
             frame.setVisible(true);
         });
+    }
+
+
+    public static String hashPassword(String password) {
+
+        try {
+
+            MessageDigest md = MessageDigest.getInstance("SHA-256");
+
+            byte[] hashBytes = md.digest(password.getBytes());
+
+            StringBuilder hexString = new StringBuilder();
+
+            for (byte b : hashBytes) {
+                String hex = Integer.toHexString(0xff & b);
+
+                if (hex.length() == 1) {
+                    hexString.append('0');
+                }
+
+                hexString.append(hex);
+            }
+
+            return hexString.toString();
+
+        } catch (NoSuchAlgorithmException e) {
+            throw new RuntimeException(e);
+        }
     }
 }
