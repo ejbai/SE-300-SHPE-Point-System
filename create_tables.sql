@@ -25,7 +25,7 @@ CREATE TABLE members (
 
 CREATE TABLE accounts (
 	username VARCHAR(256) NOT NULL,
-	passwordHash VARCHAR(512) NOT NULL,
+	passwordHashSHA256 VARCHAR(512) NOT NULL,
 	userRank ENUM ('Member', 'Director', 'Chairman') NOT NULL,
 	PRIMARY KEY (username)
 );
@@ -38,5 +38,5 @@ INSERT INTO events VALUES
 	('Event1', 'The park', '2026-03-04', 5, 20),
 	('Event2', 'The lake', '2026-03-06', 3, 12),
 	('Event3', 'The courtyard', '2026-03-07', 7, 10)
-);
+;
 	
