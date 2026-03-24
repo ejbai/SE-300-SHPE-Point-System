@@ -34,7 +34,7 @@ public class DatabaseConnection {
 
         try (Connection conn = DriverManager.getConnection(URL, USER, PASS)) {
 
-            String sql = "SELECT name, location, timeAndDate FROM events ORDER BY timeAndDate ASC";
+            String sql = "SELECT name, location, timeAndDate, pointsNeeded, pointsEarned FROM events WHERE timeAndDate >= NOW() ORDER BY timeAndDate ASC";
             PreparedStatement stmt = conn.prepareStatement(sql);
 
             ResultSet rs = stmt.executeQuery();

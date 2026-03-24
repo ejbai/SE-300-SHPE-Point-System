@@ -43,18 +43,20 @@ public class GUI {
             button.addActionListener(e -> {
                     ResultSet rs = DatabaseConnection.showEvents();
 
-                    String[] columns = {"Name", "Location", "Time and Date"};
+                    String[] columns = {"Name", "Location", "Time and Date", "Points Needed", "Points Earned"};
 
                     DefaultTableModel model = new DefaultTableModel(columns, 0);
 
                 try {
                     do {
 
-                        String event = rs.getString("name");
-                        String date = rs.getString("location");
-                        String location = rs.getString("timeAndDate");
+                        String name = rs.getString("name");
+                        String location = rs.getString("location");
+                        String date = rs.getString("timeAndDate");
+                        String pointsNeeded = rs.getString("pointsNeeded");
+                        String pointsEarned = rs.getString("pointsEarned");
 
-                        model.addRow(new Object[]{event, date, location});
+                        model.addRow(new Object[]{name, location, date, pointsNeeded, pointsEarned});
                     } while (rs.next());
                 } catch (SQLException ex) {
                     throw new RuntimeException(ex);
