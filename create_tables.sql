@@ -4,8 +4,8 @@ CREATE TABLE events (
 	name VARCHAR(256) NOT NULL,
 	location VARCHAR(256) NOT NULL,
 	timeAndDate DATETIME NOT NULL,
-	pointsEarned INT,
 	pointsNeeded INT,
+	pointsEarned INT,
 	PRIMARY KEY (location, timeAndDate)
 );
 
@@ -35,8 +35,8 @@ CREATE TABLE accounts (
 -- Create some sample events
 
 INSERT INTO events VALUES
-	('Event1', 'The park', '2026-03-04', 5, 20),
-	('Event2', 'The lake', '2026-03-06', 3, 12),
-	('Event3', 'The courtyard', '2026-03-07', 7, 10)
+	('Event1', 'The park', '2026-03-04', 20, 5),
+	('Event2', 'The lake', '2026-03-06', 12, 3),
+	('Event3', 'The courtyard', '2026-03-07', 10, 7)
 ;
 	
