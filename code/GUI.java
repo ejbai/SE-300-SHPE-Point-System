@@ -6,7 +6,7 @@ import javax.swing.table.DefaultTableModel;
 import java.sql.*;
 
 // TODO:
-//  make different views for each of the four users based on login, and buttons that do things in each of them such as show a list of things or ask for inputs (already have public view button but it doesn't do anything)
+//  make different views for each of the four users based on login, and buttons that do things in each of them such as show a list of things or ask for inputs
 //  ...
 
 public class GUI {
