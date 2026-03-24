@@ -1,3 +1,4 @@
+import javax.xml.transform.Result;
 import java.sql.*;
 
 public class DatabaseConnection {
@@ -29,7 +30,27 @@ public class DatabaseConnection {
         return null; // login failed
     }
 
+    public static ResultSet showEvents() {
+
+        try (Connection conn = DriverManager.getConnection(URL, USER, PASS)) {
+
+            String sql = "SELECT name, location, timeAndDate FROM events ORDER BY timeAndDate ASC";
+            PreparedStatement stmt = conn.prepareStatement(sql);
+
+            ResultSet rs = stmt.executeQuery();
+
+            if (rs.next()) {
+                return rs;
+            }
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        return null;
+    }
+
     static void main() {
-        checkLogin("Alice", "6b3a55e0261b0304143f805a24924d0c1c44524821305f31d9277843b8a10f4e");
+        checkLogin("Alice", "password");
     }
 }

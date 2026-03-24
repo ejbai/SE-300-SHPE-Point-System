@@ -1,10 +1,11 @@
 import javax.swing.*;
 import java.awt.*;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
+//import java.security.MessageDigest;
+//import java.nio.charset.StandardCharsets;
+import javax.swing.table.DefaultTableModel;
+import java.sql.*;
 
 // TODO:
-//  make the login button functional and check against accounts table in database
 //  make different views for each of the four users based on login, and buttons that do things in each of them such as show a list of things or ask for inputs (already have public view button but it doesn't do anything)
 //  ...
 
@@ -38,6 +39,38 @@ public class GUI {
             leftPanel.add(Box.createRigidArea(new Dimension(0, 10)));
             leftPanel.add(button);
             leftPanel.add(Box.createVerticalGlue());
+
+            button.addActionListener(e -> {
+                    ResultSet rs = DatabaseConnection.showEvents();
+
+                    String[] columns = {"Name", "Location", "Time and Date"};
+
+                    DefaultTableModel model = new DefaultTableModel(columns, 0);
+
+                try {
+                    do {
+
+                        String event = rs.getString("name");
+                        String date = rs.getString("location");
+                        String location = rs.getString("timeAndDate");
+
+                        model.addRow(new Object[]{event, date, location});
+                    } while (rs.next());
+                } catch (SQLException ex) {
+                    throw new RuntimeException(ex);
+                }
+
+                JTable table = new JTable(model);
+
+                    JScrollPane scrollPane = new JScrollPane(table);
+
+                    leftPanel.removeAll();
+                    leftPanel.setLayout(new BorderLayout());
+                    leftPanel.add(scrollPane, BorderLayout.CENTER);
+
+                    leftPanel.revalidate();
+                    leftPanel.repaint();
+            });
 
             //  RIGHT PANEL (LOGIN)
             JPanel rightPanel = new JPanel();
@@ -80,13 +113,13 @@ public class GUI {
             loginButton.addActionListener(e -> {
 
                 String username = usernameField.getText();
-                String password = new String(passwordField.getPassword());
+                String password = new String(passwordField.getPassword()).trim();
 
-                String hashedPassword = hashPassword(password); // TODO: the hashing isn't working
+//                String hashedPassword = hashPassword(password); // TODO: the hashing isn't working
 
-                String rank = DatabaseConnection.checkLogin(username, hashedPassword);
+                String rank = DatabaseConnection.checkLogin(username, password);
 
-                if(rank != null){
+                if (rank != null) {
 
                     RegisteredUser user = new RegisteredUser();
 
@@ -99,8 +132,6 @@ public class GUI {
                 }
 
             });
-
-
 
             rightPanel.add(Box.createVerticalGlue());
             rightPanel.add(loginTitle);
@@ -129,7 +160,7 @@ public class GUI {
                     rightPanel
             );
 
-            splitPane.setDividerLocation(250);
+            splitPane.setDividerLocation(750);
             splitPane.setDividerSize(8);
             splitPane.setContinuousLayout(true);
             splitPane.setBorder(BorderFactory.createEmptyBorder());
@@ -146,31 +177,27 @@ public class GUI {
         });
     }
 
+//    public static String hashPassword(String password) {
+//
+//        try {
+//
+//            MessageDigest md = MessageDigest.getInstance("SHA-256");
+//
+//            byte[] hash = md.digest(password.getBytes(StandardCharsets.UTF_8));
+//
+//            StringBuilder hex = new StringBuilder();
+//
+//            for (byte b : hash) {
+//                String s = Integer.toHexString(0xff & b);
+//                if (s.length() == 1) hex.append('0');
+//                hex.append(s);
+//            }
+//
+//            return hex.toString();
+//
+//        } catch (Exception e) {
+//            throw new RuntimeException(e);
+//        }
+//    }
 
-    public static String hashPassword(String password) {
-
-        try {
-
-            MessageDigest md = MessageDigest.getInstance("SHA-256");
-
-            byte[] hashBytes = md.digest(password.getBytes());
-
-            StringBuilder hexString = new StringBuilder();
-
-            for (byte b : hashBytes) {
-                String hex = Integer.toHexString(0xff & b);
-
-                if (hex.length() == 1) {
-                    hexString.append('0');
-                }
-
-                hexString.append(hex);
-            }
-
-            return hexString.toString();
-
-        } catch (NoSuchAlgorithmException e) {
-            throw new RuntimeException(e);
-        }
-    }
 }
