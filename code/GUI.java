@@ -1,7 +1,5 @@
 import javax.swing.*;
 import java.awt.*;
-//import java.security.MessageDigest;
-//import java.nio.charset.StandardCharsets;
 import javax.swing.table.DefaultTableModel;
 import java.sql.*;
 
@@ -10,24 +8,21 @@ import java.sql.*;
 //  ...
 
 public class GUI {
-    public static void main(String[] args) {
+    public static void defaultGUI() {
         SwingUtilities.invokeLater(() -> {
-
             JFrame frame = new JFrame("SHPE Point Tracker");
             frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
             frame.setSize(1200, 600);
-
             JPanel mainPanel = new JPanel(new BorderLayout());
 
-            //  LEFT PANEL
+            //  Left panel
             JPanel leftPanel = new JPanel();
             leftPanel.setLayout(new BoxLayout(leftPanel, BoxLayout.Y_AXIS));
             leftPanel.setBorder(BorderFactory.createEmptyBorder(0, 50, 0, 0));
-
-
             leftPanel.setOpaque(true);
             leftPanel.setBackground(Color.WHITE);
 
+            // Upcoming events button on default view
             JLabel label = new JLabel("View Upcoming Events!");
             JButton button = new JButton("View");
 
@@ -41,11 +36,11 @@ public class GUI {
             leftPanel.add(Box.createVerticalGlue());
 
             button.addActionListener(e -> {
-                    ResultSet rs = DatabaseConnection.showEvents();
+                ResultSet rs = PointsSystem.showUpcomingEvents();
 
-                    String[] columns = {"Name", "Location", "Time and Date", "Points Needed", "Points Earned"};
+                String[] columns = {"Name", "Location", "Time and Date", "Points Needed", "Points Earned"};
 
-                    DefaultTableModel model = new DefaultTableModel(columns, 0);
+                DefaultTableModel model = new DefaultTableModel(columns, 0);
 
                 try {
                     do {
@@ -64,21 +59,20 @@ public class GUI {
 
                 JTable table = new JTable(model);
 
-                    JScrollPane scrollPane = new JScrollPane(table);
+                JScrollPane scrollPane = new JScrollPane(table);
 
-                    leftPanel.removeAll();
-                    leftPanel.setLayout(new BorderLayout());
-                    leftPanel.add(scrollPane, BorderLayout.CENTER);
+                leftPanel.removeAll();
+                leftPanel.setLayout(new BorderLayout());
+                leftPanel.add(scrollPane, BorderLayout.CENTER);
 
-                    leftPanel.revalidate();
-                    leftPanel.repaint();
+                leftPanel.revalidate();
+                leftPanel.repaint();
             });
 
-            //  RIGHT PANEL (LOGIN)
+            //  Right panel (login)
             JPanel rightPanel = new JPanel();
             rightPanel.setLayout(new BoxLayout(rightPanel, BoxLayout.Y_AXIS));
             rightPanel.setBorder(BorderFactory.createEmptyBorder(0, 50, 0, 50));
-
 
             rightPanel.setOpaque(true);
             rightPanel.setBackground(new Color(245, 245, 245));
@@ -110,7 +104,7 @@ public class GUI {
             JLabel messageLabel = new JLabel(" ");
             messageLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
 
-            // login
+            // Login
 
             loginButton.addActionListener(e -> {
 
@@ -119,7 +113,7 @@ public class GUI {
 
 //                String hashedPassword = hashPassword(password); // TODO: the hashing isn't working
 
-                String rank = DatabaseConnection.checkLogin(username, password);
+                String rank = PointsSystem.checkLogin(username, password);
 
                 if (rank != null) {
 
@@ -155,18 +149,13 @@ public class GUI {
             rightPanel.add(messageLabel);
             rightPanel.add(Box.createVerticalGlue());
 
-            //  SPLIT PANE (DIVIDER)
-            JSplitPane splitPane = new JSplitPane(
-                    JSplitPane.HORIZONTAL_SPLIT,
-                    leftPanel,
-                    rightPanel
-            );
+            //  Divider between left and right panes
+            JSplitPane splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, leftPanel, rightPanel);
 
             splitPane.setDividerLocation(750);
             splitPane.setDividerSize(8);
             splitPane.setContinuousLayout(true);
             splitPane.setBorder(BorderFactory.createEmptyBorder());
-
 
             splitPane.setEnabled(true);
             splitPane.setOneTouchExpandable(false);
@@ -179,27 +168,7 @@ public class GUI {
         });
     }
 
-//    public static String hashPassword(String password) {
-//
-//        try {
-//
-//            MessageDigest md = MessageDigest.getInstance("SHA-256");
-//
-//            byte[] hash = md.digest(password.getBytes(StandardCharsets.UTF_8));
-//
-//            StringBuilder hex = new StringBuilder();
-//
-//            for (byte b : hash) {
-//                String s = Integer.toHexString(0xff & b);
-//                if (s.length() == 1) hex.append('0');
-//                hex.append(s);
-//            }
-//
-//            return hex.toString();
-//
-//        } catch (Exception e) {
-//            throw new RuntimeException(e);
-//        }
-//    }
-
+    static void main() {
+        defaultGUI();
+    }
 }
