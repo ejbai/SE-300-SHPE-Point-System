@@ -1,7 +1,7 @@
-import javax.swing.*;
 import java.awt.*;
-import javax.swing.table.DefaultTableModel;
 import java.sql.*;
+import javax.swing.*;
+import javax.swing.table.DefaultTableModel;
 
 // TODO:
 //  make different views for each of the four users based on login, and buttons that do things in each of them such as show a list of things or ask for inputs
@@ -168,7 +168,7 @@ public class GUI {
         });
     }
 
-    static void main() {
+    public static void main(String[] args) {
         defaultGUI();
     }
 }
