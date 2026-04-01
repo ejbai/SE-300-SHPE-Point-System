@@ -1,3 +1,5 @@
+USE shpe_db;
+
 -- Create events table
 
 CREATE TABLE events (
