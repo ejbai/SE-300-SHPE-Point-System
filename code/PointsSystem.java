@@ -1,12 +1,11 @@
-import java.sql.*;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 
 public class PointsSystem {
-    private static final String URL = "jdbc:mariadb://localhost:3306/shpe_db";
-    private static final String USER = "user1";
-    private static final String PASS = "";
-
     public static String checkLogin(String username, String password) {
-        try (Connection conn = DriverManager.getConnection(URL, USER, PASS)) {
+        try (Connection conn = DatabaseConnection.connect()) {
             String sql = "SELECT userRank FROM accounts WHERE username=? AND passwordHash=?";
             PreparedStatement stmt = conn.prepareStatement(sql);
             stmt.setString(1, username);
@@ -22,11 +21,12 @@ public class PointsSystem {
     }
 
     public static ResultSet showUpcomingEvents() {
-        try (Connection conn = DriverManager.getConnection(URL, USER, PASS)) {
-            String sql = "SELECT name, location, timeAndDate, pointsNeeded, pointsEarned FROM events WHERE timeAndDate >= NOW() ORDER BY timeAndDate ASC";
+        try (Connection conn = DatabaseConnection.connect()) {
+            String sql = "SELECT name, location, timeAndDate, pointsNeeded, pointsEarned FROM events WHERE timeAndDate >= datetime('now') ORDER BY timeAndDate ASC";
             PreparedStatement stmt = conn.prepareStatement(sql);
             ResultSet rs = stmt.executeQuery();
-            if (rs.next()) {
+
+            if (rs.next()) {    // TODO: problem is that this is getting skipped because rs doesn't return anything. don't know why yet
                 return rs;
             }
         } catch (SQLException e) {
@@ -36,8 +36,7 @@ public class PointsSystem {
     }
 
     public static ResultSet showAllEvents() {
-
-        try (Connection conn = DriverManager.getConnection(URL, USER, PASS)) {
+        try (Connection conn = DatabaseConnection.connect()) {
             String sql = "SELECT name, location, timeAndDate, pointsNeeded, pointsEarned FROM events ORDER BY timeAndDate ASC";
             PreparedStatement stmt = conn.prepareStatement(sql);
             ResultSet rs = stmt.executeQuery();

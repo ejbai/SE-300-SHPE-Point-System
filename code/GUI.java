@@ -44,7 +44,6 @@ public class GUI {
 
                 try {
                     do {
-
                         String name = rs.getString("name");
                         String location = rs.getString("location");
                         String date = rs.getString("timeAndDate");
