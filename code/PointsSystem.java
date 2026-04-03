@@ -20,15 +20,16 @@ public class PointsSystem {
         return null; // login failed
     }
 
-    public static ResultSet showUpcomingEvents() {
-        try (Connection conn = DatabaseConnection.connect()) {
+    public static ResultSet showUpcomingEvents(Connection conn) {
+        try {
             String sql = "SELECT name, location, timeAndDate, pointsNeeded, pointsEarned FROM events WHERE timeAndDate >= datetime('now') ORDER BY timeAndDate ASC";
             PreparedStatement stmt = conn.prepareStatement(sql);
             ResultSet rs = stmt.executeQuery();
 
-            if (rs.next()) {    // TODO: problem is that this is getting skipped because rs doesn't return anything. don't know why yet
+            if (rs.next()) {
                 return rs;
             }
+
         } catch (SQLException e) {
             e.printStackTrace();
         }

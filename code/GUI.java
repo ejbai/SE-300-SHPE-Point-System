@@ -36,7 +36,13 @@ public class GUI {
             leftPanel.add(Box.createVerticalGlue());
 
             button.addActionListener(e -> {
-                ResultSet rs = PointsSystem.showUpcomingEvents();
+                Connection conn = DatabaseConnection.connect();
+                if (conn == null) {
+                    JOptionPane.showMessageDialog(frame, "Connection Failed! Try again later.");
+                    return;
+                }
+
+                ResultSet rs = PointsSystem.showUpcomingEvents(conn);
 
                 String[] columns = {"Name", "Location", "Time and Date", "Points Needed", "Points Earned"};
 
