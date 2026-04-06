@@ -40,7 +40,6 @@ public class GUI {
             leftPanel.add(Box.createVerticalGlue());
 
             // View upcoming events button
-
             button.addActionListener(e -> {
                 ResultSet rs = PointsSystem.showUpcomingEvents(conn);
 
@@ -170,29 +169,6 @@ public class GUI {
             JLabel messageLabel = new JLabel(" ");
             messageLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
 
-            // Login
-
-            loginButton.addActionListener(e -> {
-                String username = usernameField.getText();
-                String password = new String(passwordField.getPassword());
-
-//                String hashedPassword = hashPassword(password); // TODO: the hashing isn't working
-                String rank = PointsSystem.checkLogin(conn, username, password);    // TODO: create a new menu on the left based on the login rank
-
-                if (rank != null) {
-
-                    RegisteredUser user = new RegisteredUser();
-
-                    messageLabel.setText("Login Successful (" + rank + ")");
-
-                } else {
-
-                    messageLabel.setText("Invalid Credentials");
-
-                }
-
-            });
-
             rightPanel.add(Box.createVerticalGlue());
             rightPanel.add(loginTitle);
 
@@ -229,7 +205,73 @@ public class GUI {
             frame.setContentPane(mainPanel);
             frame.setLocationRelativeTo(null);
             frame.setVisible(true);
+
+            // Login
+
+            loginButton.addActionListener(e -> {
+                String username = usernameField.getText();
+                String password = new String(passwordField.getPassword());
+
+//                String hashedPassword = hashPassword(password); // TODO: the hashing isn't working
+                ResultSet rs = PointsSystem.checkLogin(conn, username, password);    // TODO: create a new menu on the left based on the login rank
+                String userRank;
+                try {
+                    userRank = rs.getString("userRank");
+                } catch (SQLException ex) {
+                    throw new RuntimeException(ex);
+                }
+                if (rs != null) {
+                    try {
+                        replaceLoginPanel(conn, rs, userRank, messageLabel, loginButton, rightPanel);
+                    } catch (SQLException ex) {
+                        throw new RuntimeException(ex);
+                    }
+                } else {
+                    messageLabel.setText("Invalid Credentials");
+                }
+
+            });
         });
+    }
+
+    public static void replaceLoginPanel(Connection conn, ResultSet rs, String userRank, JLabel messageLabel, JButton loginButton, JPanel rightPanel) throws SQLException {
+        ResultSet r = PointsSystem.createUser(conn, rs.getInt("studentID"));
+
+        RegisteredUser user = new RegisteredUser(r.getInt("studentID"), r.getString("firstName"), r.getString("lastName"), r.getString("email"), r.getString("phoneNumber"), r.getInt("points"), userRank);
+
+        // Directly update the right panel instead of adding a new listener
+        String name = user.getFirstName() + " " + user.getLastName();
+        String rank = user.getRank();
+
+        JPanel infoPanel = new JPanel();
+        infoPanel.setLayout(new BoxLayout(infoPanel, BoxLayout.Y_AXIS));
+        infoPanel.setBackground(new Color(245, 245, 245));
+
+        JLabel welcomeLabel = new JLabel("Welcome,");
+        JLabel nameLabel = new JLabel(name);
+        JLabel rankLabel = new JLabel(rank);
+
+        welcomeLabel.setFont(new Font("Arial", Font.PLAIN, 18));
+        nameLabel.setFont(new Font("Arial", Font.BOLD, 24));
+        rankLabel.setFont(new Font("Arial", Font.PLAIN, 16));
+
+        welcomeLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
+        nameLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
+        rankLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
+
+        infoPanel.add(Box.createVerticalGlue());
+        infoPanel.add(welcomeLabel);
+        infoPanel.add(Box.createRigidArea(new Dimension(0, 5)));
+        infoPanel.add(nameLabel);
+        infoPanel.add(Box.createRigidArea(new Dimension(0, 10)));
+        infoPanel.add(rankLabel);
+        infoPanel.add(Box.createVerticalGlue());
+
+        rightPanel.removeAll();
+        rightPanel.setLayout(new BorderLayout());
+        rightPanel.add(infoPanel, BorderLayout.CENTER);
+        rightPanel.revalidate();
+        rightPanel.repaint();
     }
 
     public static void main(String[] args) {

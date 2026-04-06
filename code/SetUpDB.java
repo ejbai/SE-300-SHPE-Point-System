@@ -31,6 +31,7 @@ public class SetUpDB {
                 CREATE TABLE IF NOT EXISTS accounts (
                     username VARCHAR(256) NOT NULL,
                     passwordHashSHA256 VARCHAR(512) NOT NULL,
+                    studentID INT NOT NULL,
                     userRank CHECK (userRank IN ('Member', 'Director', 'Chairman')) NOT NULL,
                     PRIMARY KEY (username)
                 );
