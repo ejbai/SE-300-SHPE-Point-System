@@ -9,6 +9,10 @@ import java.sql.*;
 
 public class GUI {
     public static void defaultGUI() {
+        Connection conn = DatabaseConnection.connect();
+        if (conn == null) {
+            return;
+        }
         SwingUtilities.invokeLater(() -> {
             JFrame frame = new JFrame("SHPE Point Tracker");
             frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -23,7 +27,7 @@ public class GUI {
             leftPanel.setBackground(Color.WHITE);
 
             // Upcoming events button on default view
-            JLabel label = new JLabel("View Upcoming Events!");
+            JLabel label = new JLabel("View Upcoming Events");
             JButton button = new JButton("View");
 
             label.setAlignmentX(Component.CENTER_ALIGNMENT);
@@ -35,13 +39,9 @@ public class GUI {
             leftPanel.add(button);
             leftPanel.add(Box.createVerticalGlue());
 
-            button.addActionListener(e -> {
-                Connection conn = DatabaseConnection.connect();
-                if (conn == null) {
-                    JOptionPane.showMessageDialog(frame, "Connection Failed! Try again later.");
-                    return;
-                }
+            // View upcoming events button
 
+            button.addActionListener(e -> {
                 ResultSet rs = PointsSystem.showUpcomingEvents(conn);
 
                 String[] columns = {"Name", "Location", "Time and Date", "Points Needed", "Points Earned"};
@@ -57,6 +57,67 @@ public class GUI {
                         String pointsEarned = rs.getString("pointsEarned");
 
                         model.addRow(new Object[]{name, location, date, pointsNeeded, pointsEarned});
+                    } while (rs.next());
+                } catch (SQLException ex) {
+                    throw new RuntimeException(ex);
+                }
+
+                JTable table = new JTable(model);
+
+                JScrollPane scrollPane = new JScrollPane(table);
+
+                leftPanel.removeAll();
+                leftPanel.setLayout(new BorderLayout());
+                leftPanel.add(scrollPane, BorderLayout.CENTER);
+
+                leftPanel.revalidate();
+                leftPanel.repaint();
+            });
+
+            // View member name and points button on member view
+            JLabel label2 = new JLabel("View Member Name and Points");
+            JButton button2 = new JButton("View");
+
+            label2.setAlignmentX(Component.CENTER_ALIGNMENT);
+            button2.setAlignmentX(Component.CENTER_ALIGNMENT);
+
+            leftPanel.add(Box.createVerticalGlue());
+            leftPanel.add(label2);
+            leftPanel.add(Box.createRigidArea(new Dimension(0, 10)));
+            leftPanel.add(button2);
+            leftPanel.add(Box.createVerticalGlue());
+
+            // View member name and points button
+
+            button2.addActionListener(e -> {
+                // Prompt for student ID input
+                String studentIDString = JOptionPane.showInputDialog(
+                        frame,
+                        "Enter Student ID:",
+                        "Student ID Lookup",
+                        JOptionPane.PLAIN_MESSAGE
+                );
+
+                // If user canceled or left it blank, do nothing
+                if (studentIDString == null || studentIDString.trim().isEmpty()) {
+                    return;
+                }
+                int studentID = Integer.parseInt(studentIDString);
+
+                // Continue with button
+                ResultSet rs = PointsSystem.viewMemberNameAndPoints(conn, studentID);
+
+                String[] columns = {"Student ID", "First Name", "Last Name", "Points"};
+
+                DefaultTableModel model = new DefaultTableModel(columns, 0);
+
+                try {
+                    do {
+                        String firstName = rs.getString("firstName");
+                        String lastName = rs.getString("lastName");
+                        String points = rs.getString("points");
+
+                        model.addRow(new Object[]{studentID, firstName, lastName, points});
                     } while (rs.next());
                 } catch (SQLException ex) {
                     throw new RuntimeException(ex);
@@ -112,13 +173,11 @@ public class GUI {
             // Login
 
             loginButton.addActionListener(e -> {
-
                 String username = usernameField.getText();
-                String password = new String(passwordField.getPassword()).trim();
+                String password = new String(passwordField.getPassword());
 
 //                String hashedPassword = hashPassword(password); // TODO: the hashing isn't working
-
-                String rank = PointsSystem.checkLogin(username, password);
+                String rank = PointsSystem.checkLogin(conn, username, password);    // TODO: create a new menu on the left based on the login rank
 
                 if (rank != null) {
 
