@@ -1,11 +1,11 @@
-public class Event {
+public class ClubEvent {
     private String name;
     private String location;
     private String dateTime;
     private String pointsEarned;
     private String pointsNeeded;
 
-    public Event(String name, String location, String dateTime, String pointsEarned, String pointsNeeded) {
+    public ClubEvent(String name, String location, String dateTime, String pointsEarned, String pointsNeeded) {
         this.name = name;
         this.location = location;
         this.dateTime = dateTime;
