@@ -5,7 +5,7 @@ import java.sql.SQLException;
 public class DatabaseConnection {
     public static Connection connect() {
         try {
-            String url = "jdbc:sqlite:database.db";
+            String url = "jdbc:sqlite:code/database.db";
             return DriverManager.getConnection(url);
         } catch (SQLException e) {
             e.printStackTrace();
