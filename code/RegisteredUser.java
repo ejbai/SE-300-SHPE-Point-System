@@ -42,7 +42,6 @@ public class RegisteredUser {
     public String getFirstName() {
         return firstName;
     }
-
     public String getLastName() {
         return lastName;
     }
@@ -54,5 +53,8 @@ public class RegisteredUser {
     }
     public int getPoints() {
         return points;
+    }
+    public String getRank() {
+        return rank;
     }
 }

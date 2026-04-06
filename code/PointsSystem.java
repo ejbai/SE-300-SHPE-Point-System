@@ -1,19 +1,18 @@
-import java.sql.*;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 
 public class PointsSystem {
-    private static final String URL = "jdbc:mariadb://localhost:3306/shpe_db";
-    private static final String USER = "user1";
-    private static final String PASS = "";
-
-    public static String checkLogin(String username, String password) {
-        try (Connection conn = DriverManager.getConnection(URL, USER, PASS)) {
-            String sql = "SELECT userRank FROM accounts WHERE username=? AND passwordHash=?";
+    public static ResultSet checkLogin(Connection conn, String username, String password) {
+        try {
+            String sql = "SELECT studentID, userRank FROM accounts WHERE username=? AND passwordHashSHA256=?";
             PreparedStatement stmt = conn.prepareStatement(sql);
             stmt.setString(1, username);
             stmt.setString(2, password);
             ResultSet rs = stmt.executeQuery();
             if (rs.next()) {
-                return rs.getString("userRank");   // return rank if login works
+                return rs;   // return basic member information if login works
             }
         } catch (SQLException e) {
             e.printStackTrace();
@@ -21,23 +20,41 @@ public class PointsSystem {
         return null; // login failed
     }
 
-    public static ResultSet showUpcomingEvents() {
-        try (Connection conn = DriverManager.getConnection(URL, USER, PASS)) {
-            String sql = "SELECT name, location, timeAndDate, pointsNeeded, pointsEarned FROM events WHERE timeAndDate >= NOW() ORDER BY timeAndDate ASC";
+    public static ResultSet createUser(Connection conn, int studentID) {
+        try {
+            String sql = "SELECT * FROM members WHERE studentID = ?";
             PreparedStatement stmt = conn.prepareStatement(sql);
+            stmt.setInt(1, studentID);
             ResultSet rs = stmt.executeQuery();
+
             if (rs.next()) {
                 return rs;
             }
+
         } catch (SQLException e) {
             e.printStackTrace();
         }
         return null;
     }
 
-    public static ResultSet showAllEvents() {
+    public static ResultSet showUpcomingEvents(Connection conn) {
+        try {
+            String sql = "SELECT name, location, timeAndDate, pointsNeeded, pointsEarned FROM events WHERE timeAndDate >= datetime('now') ORDER BY timeAndDate ASC";
+            PreparedStatement stmt = conn.prepareStatement(sql);
+            ResultSet rs = stmt.executeQuery();
 
-        try (Connection conn = DriverManager.getConnection(URL, USER, PASS)) {
+            if (rs.next()) {
+                return rs;
+            }
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    public static ResultSet showAllEvents(Connection conn) {
+        try {
             String sql = "SELECT name, location, timeAndDate, pointsNeeded, pointsEarned FROM events ORDER BY timeAndDate ASC";
             PreparedStatement stmt = conn.prepareStatement(sql);
             ResultSet rs = stmt.executeQuery();
@@ -49,4 +66,23 @@ public class PointsSystem {
         }
         return null;
     }
+
+    public static ResultSet viewMemberNameAndPoints(Connection conn, int studentID) {
+        try {
+            String sql = "SELECT firstName, lastName, points FROM members WHERE studentID = ?";
+            PreparedStatement stmt = conn.prepareStatement(sql);
+            stmt.setInt(1, studentID);
+            ResultSet rs = stmt.executeQuery();
+
+            if (rs.next()) {
+                return rs;
+            }
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+
 }
