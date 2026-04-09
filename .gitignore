@@ -2,3 +2,4 @@ code/code.iml
 code/.idea/
 code/out/
 .DS_Store
+code/*.class
