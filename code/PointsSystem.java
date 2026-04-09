@@ -67,4 +67,15 @@ public class PointsSystem {
         }
         return null;
     }
+
+    public static ResultSet viewAllMemberContacts(Connection conn) {
+    try {
+        String sql = "SELECT firstName, lastName, email, phoneNumber FROM members ORDER BY lastName ASC, firstName ASC";
+        PreparedStatement stmt = conn.prepareStatement(sql);
+        return stmt.executeQuery();
+    } catch (SQLException e) {
+        e.printStackTrace();
+        return null;
+    }
+}
 }
