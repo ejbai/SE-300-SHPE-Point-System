@@ -98,15 +98,7 @@ public class GUI {
                             return;
                         }
 
-                        RegisteredUser user = new RegisteredUser(
-                                r.getInt("studentID"),
-                                r.getString("firstName"),
-                                r.getString("lastName"),
-                                r.getString("email"),
-                                r.getString("phoneNumber"),
-                                r.getInt("points"),
-                                userRank
-                        );
+                        RegisteredUser user = new RegisteredUser(r.getInt("studentID"), r.getString("firstName"), r.getString("lastName"), r.getString("email"), r.getString("phoneNumber"), r.getInt("points"), userRank);
 
                         replaceLoginPanel(user, rightPanel, leftPanel, frame, conn);
                         switch (user.getRank()) {
@@ -169,13 +161,7 @@ public class GUI {
 
         try {
             while (rs.next()) {
-                model.addRow(new Object[]{
-                        rs.getString("name"),
-                        rs.getString("location"),
-                        rs.getString("timeAndDate"),
-                        rs.getString("pointsNeeded"),
-                        rs.getString("pointsEarned")
-                });
+                model.addRow(new Object[]{rs.getString("name"), rs.getString("location"), rs.getString("timeAndDate"), rs.getString("pointsNeeded"), rs.getString("pointsEarned")});
             }
         } catch (SQLException ex) {
             ex.printStackTrace();
@@ -213,7 +199,7 @@ public class GUI {
             return;
         }
 
-        ResultSet rs = PointsSystem.viewMemberNameAndPoints(conn, studentID);
+        ResultSet rs = PointsSystem.viewCurrentMemberNameAndPoints(conn, studentID);
 
         if (rs == null) {
             JOptionPane.showMessageDialog(frame, "No data found.");
@@ -225,12 +211,7 @@ public class GUI {
 
         try {
             while (rs.next()) {
-                model.addRow(new Object[]{
-                        studentID,
-                        rs.getString("firstName"),
-                        rs.getString("lastName"),
-                        rs.getString("points")
-                });
+                model.addRow(new Object[]{studentID, rs.getString("firstName"), rs.getString("lastName"), rs.getString("points")});
             }
         } catch (SQLException ex) {
             ex.printStackTrace();
@@ -371,15 +352,7 @@ public class GUI {
                         return;
                     }
 
-                    RegisteredUser user = new RegisteredUser(
-                            r.getInt("studentID"),
-                            r.getString("firstName"),
-                            r.getString("lastName"),
-                            r.getString("email"),
-                            r.getString("phoneNumber"),
-                            r.getInt("points"),
-                            userRank
-                    );
+                    RegisteredUser user = new RegisteredUser(r.getInt("studentID"), r.getString("firstName"), r.getString("lastName"), r.getString("email"), r.getString("phoneNumber"), r.getInt("points"), userRank);
 
                     replaceLoginPanel(user, rightPanel, leftPanel, frame, conn);
                     switch (user.getRank()) {
@@ -444,13 +417,13 @@ public class GUI {
     public static void showDirectorDashboard(JPanel leftPanel, JFrame frame, Connection conn, RegisteredUser user) {
         /* TODO: should be similar to member dashboard except have the functionalities from SD 2.3:
         - add member
-        - edit member
+        - edit member - still to make
         - delete member
         - add event
-        - edit event
-        - view all members
+        - edit event - still to make
         - search for a member
-        - view all members' points
+        - view all members
+        - view all members' points - still to make
         - vew all events
          */
 
@@ -459,21 +432,21 @@ public class GUI {
     public static void showChairmanDashboard(JPanel leftPanel, JFrame frame, Connection conn, RegisteredUser user) {
         /* TODO: similar to member dashboard except with these functionalities from SD 2.3:
         - add member
-        - edit member
+        - edit member - still to make
         - delete member
         - add event
-        - edit event
+        - edit event - still to make
         - delete event
-        - add points to member
-        - remove points from member
-        - view all members
+        - add points to member - still to make
+        - remove points from member - still to make
         - search for a member
-        - view all members' points
-        - vew all events
+        - view all members
+        - view all members' points - still to make
+        - vew all events - still to make
          */
     }
 
-        // SHOW CLUB CONTACTS
+    // SHOW CLUB CONTACTS
     public static void showClubContactsPanel(JPanel leftPanel, JFrame frame, Connection conn, RegisteredUser user) {
         ResultSet rs = PointsSystem.viewAllMemberContacts(conn);
 
@@ -490,12 +463,7 @@ public class GUI {
 
             while (rs.next()) {
                 found = true;
-                model.addRow(new Object[]{
-                        rs.getString("firstName"),
-                        rs.getString("lastName"),
-                        rs.getString("email"),
-                        rs.getString("phoneNumber")
-                });
+                model.addRow(new Object[]{rs.getString("firstName"), rs.getString("lastName"), rs.getString("email"), rs.getString("phoneNumber")});
             }
 
             if (!found) {
@@ -543,13 +511,7 @@ public class GUI {
 
             while (rs.next()) {
                 found = true;
-                model.addRow(new Object[]{
-                        rs.getString("name"),
-                        rs.getString("location"),
-                        rs.getString("timeAndDate"),
-                        rs.getString("pointsNeeded"),
-                        rs.getString("pointsEarned")
-                });
+                model.addRow(new Object[]{rs.getString("name"), rs.getString("location"), rs.getString("timeAndDate"), rs.getString("pointsNeeded"), rs.getString("pointsEarned")});
             }
 
             if (!found) {
