@@ -224,7 +224,7 @@ public class GUI {
             return;
         }
 
-        ResultSet rs = PointsSystem.viewMemberNameAndPoints(conn, studentID);
+        ResultSet rs = PointsSystem.viewCurrentMemberNameAndPoints(conn, studentID);
 
         if (rs == null) {
             JOptionPane.showMessageDialog(frame, "No data found.");
