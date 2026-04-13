@@ -6,17 +6,17 @@ import java.sql.SQLException;
 public class PointsSystem {
 
     public static ResultSet checkLogin(Connection conn, String username, String password) {
-        try {
-            String sql = "SELECT studentID, userRank FROM accounts WHERE username=? AND passwordHashSHA256=?";
-            PreparedStatement stmt = conn.prepareStatement(sql);
-            stmt.setString(1, username);
-            stmt.setString(2, password);
-            return stmt.executeQuery();
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
+    try {
+        String sql = "SELECT studentID, userRank FROM accounts WHERE username=? AND passwordHashSHA256=?";
+        PreparedStatement stmt = conn.prepareStatement(sql);
+        stmt.setString(1, username);
+        stmt.setString(2, password);
+        return stmt.executeQuery();
+    } catch (SQLException e) {
+        e.printStackTrace();
         return null;
     }
+}
 
     public static ResultSet createUser(Connection conn, int studentID) {
         try {
