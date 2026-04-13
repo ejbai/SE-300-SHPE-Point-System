@@ -90,7 +90,6 @@ public class GUI {
                 try {
                     if (rs.next()) {
                         String userRank = rs.getString("userRank");
-                        System.out.println("DEBUG userRank = " + userRank);
 
                         if (userRank == null || userRank.trim().isEmpty()) {
                             messageLabel.setText("User rank is missing in accounts table");
