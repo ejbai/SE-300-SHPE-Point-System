@@ -58,6 +58,6 @@ public class SetUpDB {
         }
 
         createTables(conn);
-        SampleData.InsertData(conn);
+        
     }
 }
