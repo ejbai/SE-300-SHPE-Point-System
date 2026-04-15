@@ -90,12 +90,14 @@ public class GUI {
                 try {
                     if (rs.next()) {
                         String userRank = rs.getString("userRank");
-                        System.out.println("DEBUG userRank = " + userRank);
 
                         if (userRank == null || userRank.trim().isEmpty()) {
                             messageLabel.setText("User rank is missing in accounts table");
                             return;
                         }
+
+                        String normalizedRank = userRank.trim().toLowerCase();
+                        
 
                         int studentID = rs.getInt("studentID");
                         ResultSet r = PointsSystem.createUser(conn, studentID);
@@ -117,14 +119,14 @@ public class GUI {
 
                         replaceLoginPanel(user, rightPanel, leftPanel, frame, conn);
 
-                        switch (userRank) {
-                            case "Member":
+                        switch (normalizedRank) {
+                            case "member":
                                 showMemberDashboard(leftPanel, frame, conn, user);
                                 break;
-                            case "Director":
+                            case "director":
                                 showDirectorDashboard(leftPanel, frame, conn, user);
                                 break;
-                            case "Chairman":
+                            case "chairman":
                                 showChairmanDashboard(leftPanel, frame, conn, user);
                                 break;
                             default:
@@ -371,18 +373,19 @@ public class GUI {
             try {
                 if (rs.next()) {
                     String userRank = rs.getString("userRank");
-                    System.out.println("DEBUG userRank = " + userRank);
 
                     if (userRank == null || userRank.trim().isEmpty()) {
                         messageLabel.setText("User rank is missing in accounts table");
                         return;
                     }
 
+                    String normalizedRank = userRank.trim().toLowerCase();
+
                     int studentID = rs.getInt("studentID");
                     ResultSet r = PointsSystem.createUser(conn, studentID);
 
                     if (r == null || !r.next()) {
-                        messageLabel.setText("User info not found");
+                        messageLabel.setText("User information not found.");
                         return;
                     }
 
@@ -398,14 +401,14 @@ public class GUI {
 
                     replaceLoginPanel(user, rightPanel, leftPanel, frame, conn);
 
-                    switch (userRank) {
-                        case "Member":
+                    switch (normalizedRank) {
+                        case "member":
                             showMemberDashboard(leftPanel, frame, conn, user);
                             break;
-                        case "Director":
+                        case "director":
                             showDirectorDashboard(leftPanel, frame, conn, user);
                             break;
-                        case "Chairman":
+                        case "chairman":
                             showChairmanDashboard(leftPanel, frame, conn, user);
                             break;
                         default:
@@ -469,6 +472,7 @@ public class GUI {
 
         JLabel welcomeLabel = new JLabel("Director Dashboard");
         JLabel nameLabel = new JLabel(user.getFirstName() + " " + user.getLastName());
+        JLabel pointsLabel = new JLabel("Points: " + user.getPoints());
 
         JButton membersButton = new JButton("Manage Members");
         JButton eventsButton = new JButton("Manage Events");
@@ -487,6 +491,10 @@ public class GUI {
             leftPanel.add(welcomeLabel);
             leftPanel.add(Box.createRigidArea(new Dimension(0, 10)));
             leftPanel.add(nameLabel);
+            leftPanel.add(Box.createRigidArea(new Dimension(0, 15)));
+            pointsLabel.setFont(new Font("Arial", Font.PLAIN, 18));
+            pointsLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
+            leftPanel.add(pointsLabel);
             leftPanel.add(Box.createRigidArea(new Dimension(0, 30)));
             leftPanel.add(membersButton);
             leftPanel.add(Box.createRigidArea(new Dimension(0, 15)));
@@ -592,53 +600,77 @@ public class GUI {
         }
     });
 
-    editButton.addActionListener(e -> {
-        String input = JOptionPane.showInputDialog(frame, "Enter Student ID of member to edit:");
-        if (input == null || input.trim().isEmpty()) return;
+   editButton.addActionListener(e -> {
+    String input = JOptionPane.showInputDialog(frame, "Enter Student ID of member to edit:");
+    if (input == null || input.trim().isEmpty()) return;
 
-        try {
-            int studentID = Integer.parseInt(input.trim());
+    try {
+        int studentID = Integer.parseInt(input.trim());
 
-            JTextField firstField = new JTextField();
-            JTextField lastField = new JTextField();
-            JTextField emailField = new JTextField();
-            JTextField phoneField = new JTextField();
-            JTextField pointsField = new JTextField();
+        JTextField firstField = new JTextField();
+        JTextField lastField = new JTextField();
+        JTextField emailField = new JTextField();
+        JTextField phoneField = new JTextField();
+        JTextField pointsField = new JTextField();
 
-            Object[] fields = {
-                    "First Name:", firstField,
-                    "Last Name:", lastField,
-                    "Email:", emailField,
-                    "Phone Number:", phoneField,
-                    "Points:", pointsField
-            };
+        Object[] fields = {
+                "First Name:", firstField,
+                "Last Name:", lastField,
+                "Email:", emailField,
+                "Phone Number:", phoneField,
+                "Points:", pointsField
+        };
 
-            int result = JOptionPane.showConfirmDialog(frame, fields, "Edit Member", JOptionPane.OK_CANCEL_OPTION);
+        int result = JOptionPane.showConfirmDialog(frame, fields, "Edit Member", JOptionPane.OK_CANCEL_OPTION);
 
-            if (result == JOptionPane.OK_OPTION) {
-                String sql = "UPDATE members SET firstName=?, lastName=?, email=?, phoneNumber=?, points=? WHERE studentID=?";
-                PreparedStatement stmt = conn.prepareStatement(sql);
-                stmt.setString(1, firstField.getText().trim());
-                stmt.setString(2, lastField.getText().trim());
-                stmt.setString(3, emailField.getText().trim());
-                stmt.setString(4, phoneField.getText().trim());
-                stmt.setInt(5, Integer.parseInt(pointsField.getText().trim()));
-                stmt.setInt(6, studentID);
+        if (result != JOptionPane.OK_OPTION) return;
 
-                int rows = stmt.executeUpdate();
+        String pointsText = pointsField.getText().trim();
 
-                if (rows > 0) {
-                    JOptionPane.showMessageDialog(frame, "Member updated successfully.");
-                    loadAllMembers(model, conn);
-                } else {
-                    JOptionPane.showMessageDialog(frame, "Member not found.");
-                }
-            }
-        } catch (Exception ex) {
-            ex.printStackTrace();
-            JOptionPane.showMessageDialog(frame, "Error editing member.");
+        String sql = """
+            UPDATE members
+            SET firstName = COALESCE(NULLIF(?, ''), firstName),
+                lastName = COALESCE(NULLIF(?, ''), lastName),
+                email = COALESCE(NULLIF(?, ''), email),
+                phoneNumber = COALESCE(NULLIF(?, ''), phoneNumber),
+                points = CASE
+                            WHEN NULLIF(?, '') IS NULL THEN points
+                            ELSE ?
+                         END
+            WHERE studentID = ?
+            """;
+
+        PreparedStatement stmt = conn.prepareStatement(sql);
+        stmt.setString(1, firstField.getText().trim());
+        stmt.setString(2, lastField.getText().trim());
+        stmt.setString(3, emailField.getText().trim());
+        stmt.setString(4, phoneField.getText().trim());
+        stmt.setString(5, pointsText);
+
+        if (pointsText.isEmpty()) {
+            stmt.setNull(6, Types.INTEGER);
+        } else {
+            stmt.setInt(6, Integer.parseInt(pointsText));
         }
-    });
+
+        stmt.setInt(7, studentID);
+
+        int rows = stmt.executeUpdate();
+
+        if (rows > 0) {
+            JOptionPane.showMessageDialog(frame, "Member updated successfully.");
+            loadAllMembers(model, conn);
+        } else {
+            JOptionPane.showMessageDialog(frame, "Member not found.");
+        }
+
+    } catch (NumberFormatException ex) {
+        JOptionPane.showMessageDialog(frame, "Points must be a number.");
+    } catch (SQLException ex) {
+        ex.printStackTrace();
+        JOptionPane.showMessageDialog(frame, "Error editing member.");
+    }
+});
 
     deleteButton.addActionListener(e -> {
         String input = JOptionPane.showInputDialog(frame, "Enter Student ID of member to delete:");
@@ -794,51 +826,93 @@ public static void showDirectorEventsPanel(JPanel leftPanel, JFrame frame, Conne
     leftPanel.repaint();
 }
 
-public static void showDirectorPointsPanel(JPanel leftPanel, JFrame frame, Connection conn, RegisteredUser user) {
-    leftPanel.removeAll();
-    leftPanel.setLayout(new BorderLayout());
-    leftPanel.setBackground(Color.WHITE);
+    public static void showDirectorPointsPanel(JPanel leftPanel, JFrame frame, Connection conn, RegisteredUser user) {
+        leftPanel.removeAll();
+        leftPanel.setLayout(new BorderLayout());
+        leftPanel.setBackground(Color.WHITE);
 
-    String[] columns = {"Student ID", "First Name", "Last Name", "Points"};
-    DefaultTableModel model = new DefaultTableModel(columns, 0);
+        String[] columns = {"Student ID", "First Name", "Last Name", "Points"};
+        DefaultTableModel model = new DefaultTableModel(columns, 0);
 
-    try {
-        String sql = "SELECT studentID, firstName, lastName, points FROM members ORDER BY lastName ASC";
-        PreparedStatement stmt = conn.prepareStatement(sql);
-        ResultSet rs = stmt.executeQuery();
+        try {
+            String sql = "SELECT studentID, firstName, lastName, points FROM members ORDER BY lastName ASC";
+            PreparedStatement stmt = conn.prepareStatement(sql);
+            ResultSet rs = stmt.executeQuery();
 
-        while (rs.next()) {
-            model.addRow(new Object[]{
-                    rs.getInt("studentID"),
-                    rs.getString("firstName"),
-                    rs.getString("lastName"),
-                    rs.getInt("points")
-            });
+            while (rs.next()) {
+                model.addRow(new Object[]{
+                        rs.getInt("studentID"),
+                        rs.getString("firstName"),
+                        rs.getString("lastName"),
+                        rs.getInt("points")
+                });
+            }
+        } catch (SQLException ex) {
+            ex.printStackTrace();
+            JOptionPane.showMessageDialog(frame, "Error loading member points.");
+            return;
         }
-    } catch (SQLException ex) {
-        ex.printStackTrace();
-        JOptionPane.showMessageDialog(frame, "Error loading member points.");
-        return;
+
+        JTable table = new JTable(model);
+        JScrollPane scrollPane = new JScrollPane(table);
+
+        JButton backButton = new JButton("Back");
+        backButton.addActionListener(e -> showDirectorDashboard(leftPanel, frame, conn, user));
+
+        JPanel topPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
+        topPanel.add(backButton);
+
+        leftPanel.add(topPanel, BorderLayout.NORTH);
+        leftPanel.add(scrollPane, BorderLayout.CENTER);
+
+        leftPanel.revalidate();
+        leftPanel.repaint();
     }
 
-    JTable table = new JTable(model);
-    JScrollPane scrollPane = new JScrollPane(table);
-
-    JButton backButton = new JButton("Back");
-    backButton.addActionListener(e -> showDirectorDashboard(leftPanel, frame, conn, user));
-
-    JPanel topPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
-    topPanel.add(backButton);
-
-    leftPanel.add(topPanel, BorderLayout.NORTH);
-    leftPanel.add(scrollPane, BorderLayout.CENTER);
-
-    leftPanel.revalidate();
-    leftPanel.repaint();
-}
-
     public static void showChairmanDashboard(JPanel leftPanel, JFrame frame, Connection conn, RegisteredUser user) {
-        // TODO
+        leftPanel.removeAll();
+        leftPanel.setLayout(new BoxLayout(leftPanel, BoxLayout.Y_AXIS));
+        leftPanel.setBorder(BorderFactory.createEmptyBorder(30, 30, 30, 30));
+        leftPanel.setBackground(Color.WHITE);
+
+        JLabel title = new JLabel("Chairman Dashboard");
+        JLabel name = new JLabel(user.getFirstName() + " " + user.getLastName());
+        JLabel pointsLabel = new JLabel("Points: " + user.getPoints());
+
+        JButton membersButton = new JButton("Manage Members");
+        JButton eventsButton = new JButton("Manage Events");
+        JButton pointsButton = new JButton("Modify Member Points");
+
+        title.setFont(new Font("Arial", Font.BOLD, 24));
+        name.setFont(new Font("Arial", Font.PLAIN, 18));
+
+        title.setAlignmentX(Component.CENTER_ALIGNMENT);
+        name.setAlignmentX(Component.CENTER_ALIGNMENT);
+        membersButton.setAlignmentX(Component.CENTER_ALIGNMENT);
+        eventsButton.setAlignmentX(Component.CENTER_ALIGNMENT);
+        pointsButton.setAlignmentX(Component.CENTER_ALIGNMENT);
+
+        leftPanel.add(Box.createVerticalGlue());
+        leftPanel.add(title);
+        leftPanel.add(Box.createRigidArea(new Dimension(0, 10)));
+        leftPanel.add(name);
+        leftPanel.add(Box.createRigidArea(new Dimension(0, 30)));
+        pointsLabel.setFont(new Font("Arial", Font.PLAIN, 18));
+        pointsLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
+        leftPanel.add(pointsLabel);
+        leftPanel.add(membersButton);
+        leftPanel.add(Box.createRigidArea(new Dimension(0, 15)));
+        leftPanel.add(eventsButton);
+        leftPanel.add(Box.createRigidArea(new Dimension(0, 15)));
+        leftPanel.add(pointsButton);
+        leftPanel.add(Box.createVerticalGlue());
+
+        membersButton.addActionListener(e -> showChairmanMembersPanel(leftPanel, frame, conn, user));
+        eventsButton.addActionListener(e -> showChairmanEventsPanel(leftPanel, frame, conn, user));
+        pointsButton.addActionListener(e -> showModifyPointsPanel(leftPanel, frame, conn, user));
+
+        leftPanel.revalidate();
+        leftPanel.repaint();
     }
 
     // SHOW CLUB CONTACTS
@@ -1016,7 +1090,291 @@ public static void showDirectorPointsPanel(JPanel leftPanel, JFrame frame, Conne
     } catch (SQLException ex) {
         ex.printStackTrace();
     }
-}
+    }
+        public static void showChairmanMembersPanel(JPanel leftPanel, JFrame frame, Connection conn, RegisteredUser user) {
+        leftPanel.removeAll();
+        leftPanel.setLayout(new BorderLayout());
+        leftPanel.setBackground(Color.WHITE);
+
+        String[] columns = {"Student ID", "First Name", "Last Name", "Email", "Phone Number", "Points"};
+        DefaultTableModel model = new DefaultTableModel(columns, 0);
+        JTable table = new JTable(model);
+        JScrollPane scrollPane = new JScrollPane(table);
+
+        loadAllMembers(model, conn);
+
+        JButton backButton = new JButton("Back");
+        JButton refreshButton = new JButton("Refresh");
+        JButton searchButton = new JButton("Search Member");
+        JButton addButton = new JButton("Add Member");
+        JButton editButton = new JButton("Edit Member");
+        JButton deleteButton = new JButton("Delete Member");
+
+        JPanel topPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
+        topPanel.add(backButton);
+        topPanel.add(refreshButton);
+        topPanel.add(searchButton);
+        topPanel.add(addButton);
+        topPanel.add(editButton);
+        topPanel.add(deleteButton);
+
+        backButton.addActionListener(e -> showChairmanDashboard(leftPanel, frame, conn, user));
+        refreshButton.addActionListener(e -> loadAllMembers(model, conn));
+
+        searchButton.addActionListener(e -> {
+            String input = JOptionPane.showInputDialog(frame, "Enter Student ID:");
+            if (input == null || input.trim().isEmpty()) return;
+
+            try {
+                int studentID = Integer.parseInt(input.trim());
+                loadSingleMember(model, conn, studentID);
+            } catch (NumberFormatException ex) {
+                JOptionPane.showMessageDialog(frame, "Invalid Student ID.");
+            }
+        });
+
+        addButton.addActionListener(e -> {
+            JTextField idField = new JTextField();
+            JTextField firstField = new JTextField();
+            JTextField lastField = new JTextField();
+            JTextField emailField = new JTextField();
+            JTextField phoneField = new JTextField();
+            JTextField pointsField = new JTextField();
+
+            Object[] fields = {
+                    "Student ID:", idField,
+                    "First Name:", firstField,
+                    "Last Name:", lastField,
+                    "Email:", emailField,
+                    "Phone Number:", phoneField,
+                    "Points:", pointsField
+            };
+
+            int result = JOptionPane.showConfirmDialog(frame, fields, "Add Member", JOptionPane.OK_CANCEL_OPTION);
+
+            if (result == JOptionPane.OK_OPTION) {
+                try {
+                    int studentID = Integer.parseInt(idField.getText().trim());
+                    String firstName = firstField.getText().trim();
+                    String lastName = lastField.getText().trim();
+                    String email = emailField.getText().trim();
+                    String phone = phoneField.getText().trim();
+                    int points = Integer.parseInt(pointsField.getText().trim());
+
+                    String sql = "INSERT INTO members (studentID, firstName, lastName, email, phoneNumber, points) VALUES (?, ?, ?, ?, ?, ?)";
+                    PreparedStatement stmt = conn.prepareStatement(sql);
+                    stmt.setInt(1, studentID);
+                    stmt.setString(2, firstName);
+                    stmt.setString(3, lastName);
+                    stmt.setString(4, email);
+                    stmt.setString(5, phone);
+                    stmt.setInt(6, points);
+                    stmt.executeUpdate();
+
+                    JOptionPane.showMessageDialog(frame, "Member added successfully.");
+                    loadAllMembers(model, conn);
+                } catch (Exception ex) {
+                    ex.printStackTrace();
+                    JOptionPane.showMessageDialog(frame, "Error adding member.");
+                }
+            }
+        });
+
+        editButton.addActionListener(e -> {
+            String input = JOptionPane.showInputDialog(frame, "Enter Student ID of member to edit:");
+            if (input == null || input.trim().isEmpty()) return;
+
+            try {
+                int studentID = Integer.parseInt(input.trim());
+
+                JTextField firstField = new JTextField();
+                JTextField lastField = new JTextField();
+                JTextField emailField = new JTextField();
+                JTextField phoneField = new JTextField();
+                JTextField pointsField = new JTextField();
+
+                Object[] fields = {
+                        "First Name:", firstField,
+                        "Last Name:", lastField,
+                        "Email:", emailField,
+                        "Phone Number:", phoneField,
+                        "Points:", pointsField
+                };
+
+                int result = JOptionPane.showConfirmDialog(frame, fields, "Edit Member", JOptionPane.OK_CANCEL_OPTION);
+
+                if (result == JOptionPane.OK_OPTION) {
+                    String pointsText = pointsField.getText().trim();
+
+                    String sql = """
+                        UPDATE members
+                        SET firstName = COALESCE(NULLIF(?, ''), firstName),
+                            lastName = COALESCE(NULLIF(?, ''), lastName),
+                            email = COALESCE(NULLIF(?, ''), email),
+                            phoneNumber = COALESCE(NULLIF(?, ''), phoneNumber),
+                            points = CASE
+                                        WHEN NULLIF(?, '') IS NULL THEN points
+                                        ELSE ?
+                                    END
+                        WHERE studentID = ?
+                        """;
+
+                    PreparedStatement stmt = conn.prepareStatement(sql);
+                    stmt.setString(1, firstField.getText().trim());
+                    stmt.setString(2, lastField.getText().trim());
+                    stmt.setString(3, emailField.getText().trim());
+                    stmt.setString(4, phoneField.getText().trim());
+                    stmt.setString(5, pointsText);
+
+                    if (pointsText.isEmpty()) {
+                        stmt.setNull(6, Types.INTEGER);
+                    } else {
+                        stmt.setInt(6, Integer.parseInt(pointsText));
+                    }
+
+                    stmt.setInt(7, studentID);
+
+                    int rows = stmt.executeUpdate();
+
+                    if (rows > 0) {
+                        JOptionPane.showMessageDialog(frame, "Member updated successfully.");
+                        loadAllMembers(model, conn);
+                    } else {
+                        JOptionPane.showMessageDialog(frame, "Member not found.");
+                    }
+                }
+            } catch (Exception ex) {
+                ex.printStackTrace();
+                JOptionPane.showMessageDialog(frame, "Error editing member.");
+            }
+        });
+
+        deleteButton.addActionListener(e -> {
+            String input = JOptionPane.showInputDialog(frame, "Enter Student ID of member to delete:");
+            if (input == null || input.trim().isEmpty()) return;
+
+            try {
+                int studentID = Integer.parseInt(input.trim());
+
+                int confirm = JOptionPane.showConfirmDialog(
+                        frame,
+                        "Delete member with ID " + studentID + "?",
+                        "Confirm Delete",
+                        JOptionPane.YES_NO_OPTION
+                );
+
+                if (confirm == JOptionPane.YES_OPTION) {
+                    String sql = "DELETE FROM members WHERE studentID=?";
+                    PreparedStatement stmt = conn.prepareStatement(sql);
+                    stmt.setInt(1, studentID);
+
+                    int rows = stmt.executeUpdate();
+
+                    if (rows > 0) {
+                        JOptionPane.showMessageDialog(frame, "Member deleted successfully.");
+                        loadAllMembers(model, conn);
+                    } else {
+                        JOptionPane.showMessageDialog(frame, "Member not found.");
+                    }
+                }
+            } catch (Exception ex) {
+                ex.printStackTrace();
+                JOptionPane.showMessageDialog(frame, "Error deleting member.");
+            }
+        });
+
+        leftPanel.add(topPanel, BorderLayout.NORTH);
+        leftPanel.add(scrollPane, BorderLayout.CENTER);
+
+        leftPanel.revalidate();
+        leftPanel.repaint();
+    }
+
+    public static void showChairmanEventsPanel(JPanel leftPanel, JFrame frame, Connection conn, RegisteredUser user) {
+        leftPanel.removeAll();
+        leftPanel.setLayout(new BorderLayout());
+
+        String[] columns = {"Name", "Location", "Time", "Points Needed", "Points Earned"};
+        DefaultTableModel model = new DefaultTableModel(columns, 0);
+        JTable table = new JTable(model);
+
+        loadAllEvents(model, conn);
+
+        JButton backButton = new JButton("Back");
+        JButton addButton = new JButton("Add Event");
+        JButton editButton = new JButton("Edit Event");
+        JButton deleteButton = new JButton("Delete Event");
+
+        JPanel topPanel = new JPanel();
+        topPanel.add(backButton);
+        topPanel.add(addButton);
+        topPanel.add(editButton);
+        topPanel.add(deleteButton);
+
+        backButton.addActionListener(e -> showChairmanDashboard(leftPanel, frame, conn, user));
+
+        deleteButton.addActionListener(e -> {
+            String name = JOptionPane.showInputDialog("Enter event name to delete:");
+
+            if (name == null || name.trim().isEmpty()) return;
+
+            try {
+                String sql = "DELETE FROM events WHERE name=?";
+                PreparedStatement stmt = conn.prepareStatement(sql);
+                stmt.setString(1, name.trim());
+
+                int rows = stmt.executeUpdate();
+
+                if (rows > 0) {
+                    JOptionPane.showMessageDialog(frame, "Event deleted.");
+                    loadAllEvents(model, conn);
+                } else {
+                    JOptionPane.showMessageDialog(frame, "Event not found.");
+                }
+
+            } catch (SQLException ex) {
+                ex.printStackTrace();
+            }
+        });
+
+        leftPanel.add(topPanel, BorderLayout.NORTH);
+        leftPanel.add(new JScrollPane(table), BorderLayout.CENTER);
+
+        leftPanel.revalidate();
+        leftPanel.repaint();
+    }
+
+    public static void showModifyPointsPanel(JPanel leftPanel, JFrame frame, Connection conn, RegisteredUser user) {
+        String input = JOptionPane.showInputDialog(frame, "Enter Student ID:");
+
+        if (input == null || input.trim().isEmpty()) return;
+
+        try {
+            int studentID = Integer.parseInt(input.trim());
+
+            String pointsInput = JOptionPane.showInputDialog(frame, "Enter points to ADD or REMOVE (use negative number to subtract):");
+
+            if (pointsInput == null || pointsInput.trim().isEmpty()) return;
+
+            int change = Integer.parseInt(pointsInput.trim());
+
+            String sql = "UPDATE members SET points = points + ? WHERE studentID=?";
+            PreparedStatement stmt = conn.prepareStatement(sql);
+            stmt.setInt(1, change);
+            stmt.setInt(2, studentID);
+
+            int rows = stmt.executeUpdate();
+
+            if (rows > 0) {
+                JOptionPane.showMessageDialog(frame, "Points updated.");
+            } else {
+                JOptionPane.showMessageDialog(frame, "Member not found.");
+            }
+
+        } catch (Exception ex) {
+            JOptionPane.showMessageDialog(frame, "Invalid input.");
+        }
+    }
 
     public static void main(String[] args) {
         defaultGUI();
