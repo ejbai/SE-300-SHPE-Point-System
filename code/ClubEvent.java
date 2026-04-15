@@ -13,6 +13,14 @@ public class ClubEvent {
         this.pointsNeeded = pointsNeeded;
     }
 
+    public ClubEvent(String name) {
+        this.name = name;
+        this.location = "";
+        this.dateTime = "";
+        this.pointsEarned = "";
+        this.pointsNeeded = "";
+    }
+
     public String getName() {
         return name;
     }

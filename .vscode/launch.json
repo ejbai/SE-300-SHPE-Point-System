@@ -3,6 +3,13 @@
   "configurations": [
     {
       "type": "java",
+      "name": "PointsSystem",
+      "request": "launch",
+      "mainClass": "PointsSystem",
+      "projectName": "SE-300-SHPE-Point-System_db53aded"
+    },
+    {
+      "type": "java",
       "name": "Run GUI",
       "request": "launch",
       "mainClass": "GUI",

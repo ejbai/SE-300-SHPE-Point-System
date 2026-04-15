@@ -1,3 +1,6 @@
+import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.sql.*;
 import javax.swing.table.DefaultTableModel;
 
@@ -5,16 +8,43 @@ public class PointsSystem {
 
     public static ResultSet checkLogin(Connection conn, String username, String password) {
         try {
+            String hashedPassword = hashPassword(password);
             String sql = "SELECT studentID, userRank FROM accounts WHERE username=? AND passwordHashSHA256=?";
             PreparedStatement stmt = conn.prepareStatement(sql);
             stmt.setString(1, username);
-            stmt.setString(2, password);
+            stmt.setString(2, hashedPassword);
             return stmt.executeQuery();
         } catch (SQLException e) {
             e.printStackTrace();
             return null;
         }
     }
+
+
+    public static String hashPassword(String plaintextPassword) {
+        try {
+            // Get the SHA-256 algorithm instance
+            MessageDigest digest = MessageDigest.getInstance("SHA-256");
+
+            // Convert input string to bytes and compute the hash
+            byte[] encodedHash = digest.digest(plaintextPassword.getBytes(StandardCharsets.UTF_8));
+
+            // Convert byte array into a hex string
+            StringBuilder hexString = new StringBuilder();
+            for (byte b : encodedHash) {
+                String hex = Integer.toHexString(0xff & b);
+                if (hex.length() == 1) {
+                    hexString.append('0'); // Ensure lead zero for single digits
+                }
+                hexString.append(hex);
+            }
+            return hexString.toString();
+
+        } catch (NoSuchAlgorithmException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
 
     public static ResultSet createUser(Connection conn, int studentID) {
         try {
@@ -117,8 +147,7 @@ public class PointsSystem {
         }
     }
 
-    public static boolean addMember(Connection conn, int studentID, String firstName, String lastName,
-                                    String email, String phoneNumber, int points) {
+    public static boolean addMember(Connection conn, int studentID, String firstName, String lastName, String email, String phoneNumber, int points) {
         try {
             String sql = """
                     INSERT INTO members (studentID, firstName, lastName, email, phoneNumber, points)
@@ -138,8 +167,7 @@ public class PointsSystem {
         }
     }
 
-    public static boolean editMember(Connection conn, int studentID, String firstName, String lastName,
-                                     String email, String phoneNumber, String pointsText) {
+    public static boolean editMember(Connection conn, int studentID, String firstName, String lastName, String email, String phoneNumber, String pointsText) {
         try {
             String sql = """
                     UPDATE members
@@ -188,8 +216,7 @@ public class PointsSystem {
         }
     }
 
-    public static boolean addEvent(Connection conn, String name, String location, String timeAndDate,
-                                   int pointsNeeded, int pointsEarned) {
+    public static boolean addEvent(Connection conn, String name, String location, String timeAndDate, int pointsNeeded, int pointsEarned) {
         try {
             String sql = """
                     INSERT INTO events (name, location, timeAndDate, pointsNeeded, pointsEarned)
@@ -208,8 +235,7 @@ public class PointsSystem {
         }
     }
 
-    public static boolean editEvent(Connection conn, String eventName, String location, String timeAndDate,
-                                    int pointsNeeded, int pointsEarned) {
+    public static boolean editEvent(Connection conn, String eventName, String location, String timeAndDate, int pointsNeeded, int pointsEarned) {
         try {
             String sql = """
                     UPDATE events
@@ -259,14 +285,7 @@ public class PointsSystem {
         try {
             ResultSet rs = viewAllMembers(conn);
             while (rs != null && rs.next()) {
-                model.addRow(new Object[]{
-                        rs.getInt("studentID"),
-                        rs.getString("firstName"),
-                        rs.getString("lastName"),
-                        rs.getString("email"),
-                        rs.getString("phoneNumber"),
-                        rs.getInt("points")
-                });
+                model.addRow(new Object[]{rs.getInt("studentID"), rs.getString("firstName"), rs.getString("lastName"), rs.getString("email"), rs.getString("phoneNumber"), rs.getInt("points")});
             }
         } catch (SQLException e) {
             e.printStackTrace();
@@ -278,14 +297,7 @@ public class PointsSystem {
         try {
             ResultSet rs = searchForMember(conn, studentID);
             while (rs != null && rs.next()) {
-                model.addRow(new Object[]{
-                        rs.getInt("studentID"),
-                        rs.getString("firstName"),
-                        rs.getString("lastName"),
-                        rs.getString("email"),
-                        rs.getString("phoneNumber"),
-                        rs.getInt("points")
-                });
+                model.addRow(new Object[]{rs.getInt("studentID"), rs.getString("firstName"), rs.getString("lastName"), rs.getString("email"), rs.getString("phoneNumber"), rs.getInt("points")});
             }
         } catch (SQLException e) {
             e.printStackTrace();
@@ -297,13 +309,7 @@ public class PointsSystem {
         try {
             ResultSet rs = showAllEvents(conn);
             while (rs != null && rs.next()) {
-                model.addRow(new Object[]{
-                        rs.getString("name"),
-                        rs.getString("location"),
-                        rs.getString("timeAndDate"),
-                        rs.getInt("pointsNeeded"),
-                        rs.getInt("pointsEarned")
-                });
+                model.addRow(new Object[]{rs.getString("name"), rs.getString("location"), rs.getString("timeAndDate"), rs.getInt("pointsNeeded"), rs.getInt("pointsEarned")});
             }
         } catch (SQLException e) {
             e.printStackTrace();
@@ -315,13 +321,7 @@ public class PointsSystem {
         try {
             ResultSet rs = showUpcomingEvents(conn);
             while (rs != null && rs.next()) {
-                model.addRow(new Object[]{
-                        rs.getString("name"),
-                        rs.getString("location"),
-                        rs.getString("timeAndDate"),
-                        rs.getInt("pointsNeeded"),
-                        rs.getInt("pointsEarned")
-                });
+                model.addRow(new Object[]{rs.getString("name"), rs.getString("location"), rs.getString("timeAndDate"), rs.getInt("pointsNeeded"), rs.getInt("pointsEarned")});
             }
         } catch (SQLException e) {
             e.printStackTrace();
@@ -336,12 +336,7 @@ public class PointsSystem {
             ResultSet rs = stmt.executeQuery();
 
             while (rs.next()) {
-                model.addRow(new Object[]{
-                        rs.getInt("studentID"),
-                        rs.getString("firstName"),
-                        rs.getString("lastName"),
-                        rs.getInt("points")
-                });
+                model.addRow(new Object[]{rs.getInt("studentID"), rs.getString("firstName"), rs.getString("lastName"), rs.getInt("points")});
             }
         } catch (SQLException e) {
             e.printStackTrace();
@@ -353,15 +348,14 @@ public class PointsSystem {
         try {
             ResultSet rs = viewAllMemberContacts(conn);
             while (rs != null && rs.next()) {
-                model.addRow(new Object[]{
-                        rs.getString("firstName"),
-                        rs.getString("lastName"),
-                        rs.getString("email"),
-                        rs.getString("phoneNumber")
-                });
+                model.addRow(new Object[]{rs.getString("firstName"), rs.getString("lastName"), rs.getString("email"), rs.getString("phoneNumber")});
             }
         } catch (SQLException e) {
             e.printStackTrace();
         }
+    }
+
+    public static void main(String[] args) throws NoSuchAlgorithmException {
+        System.out.println(hashPassword("password"));
     }
 }
