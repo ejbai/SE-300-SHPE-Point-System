@@ -120,10 +120,8 @@ public class GUI {
                         r.getInt("studentID"),
                         r.getString("firstName"),
                         r.getString("lastName"),
-                        r.getString("email"),
-                        r.getString("phoneNumber"),
                         r.getInt("points"),
-                        userRank
+                        normalizedRank
                 );
 
                 replaceLoginPanel(user, rightPanel, leftPanel, frame, conn);

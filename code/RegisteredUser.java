@@ -19,6 +19,14 @@ public class RegisteredUser {
         this.rank = rank;
     }
 
+    public RegisteredUser(int ID, String firstName, String lastName, int points, String rank) {
+        this.studentID = ID;
+        this.firstName = firstName;
+        this.lastName = lastName;
+        this.points = points;
+        this.rank = rank;
+    }
+
     public void setFirstName(String name) {
         this.firstName = name;
     }
