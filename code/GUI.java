@@ -703,13 +703,13 @@ public class GUI {
             if (result == JOptionPane.OK_OPTION) {
                 try {
                     boolean success = PointsSystem.editEvent(
-                            conn,
-                            eventName.trim(),
-                            locationField.getText().trim(),
-                            timeField.getText().trim(),
-                            Integer.parseInt(pointsNeededField.getText().trim()),
-                            Integer.parseInt(pointsEarnedField.getText().trim())
-                    );
+                    conn,
+                    eventName.trim(),
+                    locationField.getText(),
+                    timeField.getText(),
+                    pointsNeededField.getText(),
+                    pointsEarnedField.getText()
+                );
 
                     if (success) {
                         JOptionPane.showMessageDialog(frame, "Event updated successfully.");

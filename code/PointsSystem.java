@@ -235,21 +235,46 @@ public class PointsSystem {
         }
     }
 
-    public static boolean editEvent(Connection conn, String eventName, String location, String timeAndDate, int pointsNeeded, int pointsEarned) {
+    public static boolean editEvent(Connection conn, String eventName, String location, String timeAndDate, String pointsNeededText, String pointsEarnedText) {
         try {
             String sql = """
                     UPDATE events
-                    SET location=?, timeAndDate=?, pointsNeeded=?, pointsEarned=?
-                    WHERE name=?
+                    SET location = COALESCE(NULLIF(?, ''), location),
+                        timeAndDate = COALESCE(NULLIF(?, ''), timeAndDate),
+                        pointsNeeded = CASE
+                                        WHEN NULLIF(?, '') IS NULL THEN pointsNeeded
+                                        ELSE ?
+                                    END,
+                        pointsEarned = CASE
+                                        WHEN NULLIF(?, '') IS NULL THEN pointsEarned
+                                        ELSE ?
+                                    END
+                    WHERE name = ?
                     """;
+
             PreparedStatement stmt = conn.prepareStatement(sql);
-            stmt.setString(1, location);
-            stmt.setString(2, timeAndDate);
-            stmt.setInt(3, pointsNeeded);
-            stmt.setInt(4, pointsEarned);
-            stmt.setString(5, eventName);
+
+            stmt.setString(1, location.trim());
+            stmt.setString(2, timeAndDate.trim());
+
+            stmt.setString(3, pointsNeededText.trim());
+            if (pointsNeededText.trim().isEmpty()) {
+                stmt.setNull(4, Types.INTEGER);
+            } else {
+                stmt.setInt(4, Integer.parseInt(pointsNeededText.trim()));
+            }
+
+            stmt.setString(5, pointsEarnedText.trim());
+            if (pointsEarnedText.trim().isEmpty()) {
+                stmt.setNull(6, Types.INTEGER);
+            } else {
+                stmt.setInt(6, Integer.parseInt(pointsEarnedText.trim()));
+            }
+
+            stmt.setString(7, eventName);
+
             return stmt.executeUpdate() > 0;
-        } catch (SQLException e) {
+        } catch (SQLException | NumberFormatException e) {
             e.printStackTrace();
             return false;
         }
