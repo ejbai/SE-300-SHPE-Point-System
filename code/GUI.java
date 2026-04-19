@@ -574,6 +574,11 @@ public class GUI {
             try {
                 int studentID = Integer.parseInt(input.trim());
 
+                if (studentID == user.getStudentID()) {
+                    JOptionPane.showMessageDialog(frame, "You cannot delete your own account while logged in.");
+                    return;
+                }
+
                 int confirm = JOptionPane.showConfirmDialog(
                         frame,
                         "Delete member with ID " + studentID + "?",
