@@ -650,30 +650,34 @@ public class GUI {
         addButton.addActionListener(e -> {
             JTextField nameField = new JTextField();
             JTextField locationField = new JTextField();
+            JTextField dateField = new JTextField();
             JTextField timeField = new JTextField();
             JTextField pointsNeededField = new JTextField();
             JTextField pointsEarnedField = new JTextField();
 
             Object[] fields = {
-                    "Name:", nameField,
-                    "Location:", locationField,
-                    "Time and Date:", timeField,
-                    "Points Needed:", pointsNeededField,
-                    "Points Earned:", pointsEarnedField
+                "Name:", nameField,
+                "Location:", locationField,
+                "Date (YYYY-MM-DD):", dateField,
+                "Time (HH:MM):", timeField,
+                "Points Needed:", pointsNeededField,
+                "Points Earned:", pointsEarnedField
             };
 
             int result = JOptionPane.showConfirmDialog(frame, fields, "Add Event", JOptionPane.OK_CANCEL_OPTION);
 
             if (result == JOptionPane.OK_OPTION) {
                 try {
+                    String dateTime = dateField.getText().trim() + " / " + timeField.getText().trim();
+
                     boolean success = PointsSystem.addEvent(
-                            conn,
-                            nameField.getText().trim(),
-                            locationField.getText().trim(),
-                            timeField.getText().trim(),
-                            Integer.parseInt(pointsNeededField.getText().trim()),
-                            Integer.parseInt(pointsEarnedField.getText().trim())
-                    );
+                    conn,
+                    nameField.getText().trim(),
+                    locationField.getText().trim(),
+                    dateTime,
+                    Integer.parseInt(pointsNeededField.getText().trim()),
+                    Integer.parseInt(pointsEarnedField.getText().trim())
+                );
 
                     if (success) {
                         JOptionPane.showMessageDialog(frame, "Event added successfully.");
@@ -687,34 +691,43 @@ public class GUI {
             }
         });
 
-        editButton.addActionListener(e -> {
-            String eventName = JOptionPane.showInputDialog(frame, "Enter event name to edit:");
-            if (eventName == null || eventName.trim().isEmpty()) return;
+            editButton.addActionListener(e -> {
+                String eventName = JOptionPane.showInputDialog(frame, "Enter event name to edit:");
+                if (eventName == null || eventName.trim().isEmpty()) return;
 
-            JTextField locationField = new JTextField();
-            JTextField timeField = new JTextField();
-            JTextField pointsNeededField = new JTextField();
-            JTextField pointsEarnedField = new JTextField();
+                JTextField locationField = new JTextField();
+                JTextField dateField = new JTextField();
+                JTextField timeField = new JTextField();
+                JTextField pointsNeededField = new JTextField();
+                JTextField pointsEarnedField = new JTextField();
 
-            Object[] fields = {
-                    "New Location:", locationField,
-                    "New Time and Date:", timeField,
-                    "New Points Needed:", pointsNeededField,
-                    "New Points Earned:", pointsEarnedField
-            };
+                Object[] fields = {
+                        "New Location:", locationField,
+                        "New Date (YYYY-MM-DD):", dateField,
+                        "New Time (HH:MM):", timeField,
+                        "New Points Needed:", pointsNeededField,
+                        "New Points Earned:", pointsEarnedField
+                };
 
-            int result = JOptionPane.showConfirmDialog(frame, fields, "Edit Event", JOptionPane.OK_CANCEL_OPTION);
+                int result = JOptionPane.showConfirmDialog(frame, fields, "Edit Event", JOptionPane.OK_CANCEL_OPTION);
 
-            if (result == JOptionPane.OK_OPTION) {
-                try {
+                if (result == JOptionPane.OK_OPTION) {
+                    String dateText = dateField.getText().trim();
+                    String timeText = timeField.getText().trim();
+                    String dateTime = "";
+
+                    if (!dateText.isEmpty() || !timeText.isEmpty()) {
+                        dateTime = dateText + " / " + timeText;
+                    }
+
                     boolean success = PointsSystem.editEvent(
-                    conn,
-                    eventName.trim(),
-                    locationField.getText(),
-                    timeField.getText(),
-                    pointsNeededField.getText(),
-                    pointsEarnedField.getText()
-                );
+                            conn,
+                            eventName.trim(),
+                            locationField.getText(),
+                            dateTime,
+                            pointsNeededField.getText(),
+                            pointsEarnedField.getText()
+                    );
 
                     if (success) {
                         JOptionPane.showMessageDialog(frame, "Event updated successfully.");
@@ -722,11 +735,8 @@ public class GUI {
                     } else {
                         JOptionPane.showMessageDialog(frame, "Event not found.");
                     }
-                } catch (Exception ex) {
-                    JOptionPane.showMessageDialog(frame, "Invalid input.");
                 }
-            }
-        });
+                });
 
         if (deleteButton != null) {
             deleteButton.addActionListener(e -> {
